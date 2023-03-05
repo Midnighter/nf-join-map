@@ -1,0 +1,4 @@
+input: "samples.txt"
+ena_metadata_fields: "run_accession,experiment_accession,base_count,library_layout,fastq_bytes,fastq_ftp,fastq_md5"
+sample_mapping_fields: "run_accession,experiment_accession"
+outdir: "results"
