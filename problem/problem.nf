@@ -6,14 +6,14 @@ nextflow.enable.dsl = 2
  * Nf-core modules
  *****************************************************************************/
 
-include { FALCO } from './modules/nf-core/falco/main'
+include { FALCO } from '../modules/nf-core/falco/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main'
 
 /******************************************************************************
  * Local modules
  *****************************************************************************/
 
-include { FASTQ_READCOUNT } from './modules/fastq_readcount'
+include { FASTQ_READCOUNT } from '../modules/local/fastq_readcount'
 
 /******************************************************************************
  * Helper functions
@@ -28,11 +28,6 @@ def add_counts_inplace(row) {
     def (meta, count, reads) = row
     meta.total_reads = count
     return [meta, reads]
-}
-
-def add_counts_copy(row) {
-    def (meta, count, reads) = row
-    return [meta + [total_reads: count], reads]
 }
 
 /******************************************************************************
@@ -55,21 +50,22 @@ Results Path: ${params.outdir}
 
     // tuple val(meta), path(reads)
     def ch_reads = Channel.fromPath(params.input, checkIfExists: true)
-      .splitCsv(header: true, sep: '\t')
-      .map { row -> [row + [id: row.sample], [file(row.fastq, checkIfExists: true)]] }
-
-    ch_reads.view(meta, reads -> "${meta} <${System.identityHashCode(meta)}>")
+        .splitCsv(header: true, sep: ',', quote: '"')
+        .map { row ->
+            [
+                row + [id: row.run_accession, single_end: true],
+                file("../data/${row.fastq_1}", checkIfExists: true)
+            ]
+        }
 
     // tuple val(meta), path(reads)
     def ch_counted_reads = FASTQ_READCOUNT(ch_reads).counts
-        .map { transform_counts(it) }  // tuple val(meta), val(count)
-        .join(ch_reads)  // tuple val(meta), val(count), path(reads)
+        .map { transform_counts(it) }
+        .join(ch_reads, failOnMismatch: true)
         .map { add_counts_inplace(it) }
-
-    ch_counted_reads.view(meta, reads -> "${meta} <${System.identityHashCode(meta)}>")
 
     FALCO(ch_counted_reads)
 
-    MULTIQC(FALCO.out.txt.collect())
+    // MULTIQC(FALCO.out.txt.collect { meta, data -> data }, [], [], [])
 
 }
