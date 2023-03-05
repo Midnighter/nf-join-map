@@ -1,6 +1,6 @@
 # Join Channels
 
-It is standard practice in nf-core to pass around a map with sample meta information as the first element in channels. It is therefore very tempting to use that map as the key to merge by in operators such as [join](https://www.nextflow.io/docs/latest/operator.html#join), [groupTuple](https://www.nextflow.io/docs/latest/operator.html#grouptuple), [combine](https://www.nextflow.io/docs/latest/operator.html#combine) (with `by`), or [cross](https://www.nextflow.io/docs/latest/operator.html#cross).
+It is [standard practice in nf-core](https://nf-co.re/docs/contributing/modules#what-is-the-meta-map) to pass around a map with sample meta information as the first element in channels. It is therefore very tempting to use that map as the key to merge by in operators such as [join](https://www.nextflow.io/docs/latest/operator.html#join), [groupTuple](https://www.nextflow.io/docs/latest/operator.html#grouptuple), [combine](https://www.nextflow.io/docs/latest/operator.html#combine) (with `by`), or [cross](https://www.nextflow.io/docs/latest/operator.html#cross).
 
 When such a map is also modified directly, this can break the merging operation when resuming a pipeline. (I'm not completely sure of the underlying reason.) This can be verified with the `failOnMismatch: true` option for `join`.
 
@@ -14,7 +14,7 @@ When such a map is also modified directly, this can break the merging operation 
     cd ..
     ```
 
-2. Change to the directory demonstrating the problem where such a map is modified in place. After some samples have been processed successfully, you should interrupt the pipeline (`Ctrl + c`), then resume it by executing the script `run.sh` again
+2. Change to the directory demonstrating the problem where such a map is modified in place. After some samples have been processed successfully, you should interrupt the pipeline (`Ctrl + c`), then resume it by executing the script `run.sh` again.
 
     ```sh
     cd problem
