@@ -1,0 +1,3 @@
+sp:
+  fastqc/data:
+    fn_re: ".*_data.txt"

@@ -41,8 +41,9 @@ workflow {
 FASTQ Read Count
 ================
 
-Sample Sheet: ${params.input}
-Results Path: ${params.outdir}
+Sample Sheet:   ${params.input}
+MultiQC Config: ${params.multiqc_config}
+Results Path:   ${params.outdir}
 
 ************************************************************
 
@@ -57,6 +58,9 @@ Results Path: ${params.outdir}
                 file("../data/${row.fastq_1}", checkIfExists: true)
             ]
         }
+
+    def multiqc_config = Channel.fromPath(params.multiqc_config, checkIfExists: true)
+        .first()
 
     def left = FASTQ_READCOUNT(ch_reads).counts
         .map { transform_counts(it) }  // tuple val(meta), val(count)
@@ -78,6 +82,12 @@ Results Path: ${params.outdir}
 
     FALCO(ch_counted_reads)
 
-    // MULTIQC(FALCO.out.txt.collect { meta, data -> data }, [], [], [])
+    def ch_mqc_input = FALCO.out.txt
+        .map { meta, reports -> reports }
+        .flatten()
+        .filter { path -> path.name.endsWith('_data.txt')}
+        .collect()
+
+    MULTIQC(ch_mqc_input, [], multiqc_config, [])
 
 }
